@@ -21,20 +21,26 @@ mkdir -p dependencies/bin || true
 
 # Download bitcoind and bitcoin-cli 
 if [ ! -f dependencies/bin/bitcoind ]; then
-    wget https://bitcoin.org/bin/bitcoin-core-0.18.1/bitcoin-0.18.1-x86_64-linux-gnu.tar.gz
-    tar -xzf bitcoin-0.18.1-x86_64-linux-gnu.tar.gz
+    wget "https://bitcoin.org/bin/bitcoin-core-0.18.1/bitcoin-0.18.1-${TARGET_HOST:-x86_64-linux-gnu}.tar.gz"
+    tar -xzf bitcoin-0.18.1-*.tar.gz
     mv bitcoin-0.18.1/bin/* dependencies/bin
-    rm -rf bitcoin-0.18.1-x86_64-linux-gnu.tar.gz bitcoin-0.18.1
+    rm -rf bitcoin-0.18.1-*.tar.gz bitcoin-0.18.1
 fi
 
-pyenv global 3.7
+# Some machines already have pyenv installed. If not install it
+if ! command -v pyenv ; then
+    (curl https://pyenv.run | bash)
+    pyenv install 3.7.6
+    export PATH="$HOME/.pyenv/bin:$PATH"
+fi
+pyenv global 3.7.6
 
 # Update pip first, may save us the compilation of binary packages in the next call
-pip3 install --user -U --quiet --progress-bar off \
+python -m pip install --user -U --quiet --progress-bar off \
      pip \
      pytest-test-groups==1.0.3
 
-pip3 install --user -U --quiet --progress-bar off \
+python -m pip install --user -U --quiet --progress-bar off \
      -r requirements.txt \
      -r tests/requirements.txt \
      -r doc/requirements.txt \
